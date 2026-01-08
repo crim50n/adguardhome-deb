@@ -1,0 +1,3 @@
+var/lib/adguardhome
+etc/adguardhome
+usr/bin

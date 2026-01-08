@@ -1,0 +1,17 @@
+[Unit]
+Description=AdGuard Home: Network-wide ads & trackers blocking DNS server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=adguardhome
+Group=adguardhome
+ExecStart=/usr/bin/adguardhome --work-dir /var/lib/adguardhome --config /etc/adguardhome/AdGuardHome.yaml --no-check-update
+Restart=always
+RestartSec=10
+WorkingDirectory=/var/lib/adguardhome
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

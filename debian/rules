@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export GO111MODULE = on
+export GOPROXY = https://proxy.golang.org,direct
+
+VERSION := v$(shell dpkg-parsechangelog -S Version | sed -e 's/-[^-]*$$//')
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	[ ! -d $(CURDIR)/.cache ] || chmod -R u+w $(CURDIR)/.cache
+	rm -rf $(CURDIR)/.cache
+	rm -rf client/node_modules
+	rm -f AdGuardHome
+	[ ! -d obj-x86_64-linux-gnu ] || chmod -R u+w obj-x86_64-linux-gnu
+	rm -rf obj-x86_64-linux-gnu
+	rm -rf build/static dist bin
+	# dh_auto_clean runs make clean which removes build/static, so we skip it
+
+override_dh_auto_build:
+	# Set HOME to a writable directory for npm and go
+	mkdir -p $(CURDIR)/.cache
+	export HOME=$(CURDIR)/.cache && \
+	make js-deps && \
+	make js-build && \
+	make go-deps && \
+	make go-build VERSION=$(VERSION) REVISION=$(VERSION) VERBOSE=1
+
+override_dh_auto_test:
+	# Skip tests
+	true
+
+override_dh_auto_install:
+	# Install the binary
+	mkdir -p debian/adguardhome/usr/bin
+	cp AdGuardHome debian/adguardhome/usr/bin/adguardhome
